@@ -72,11 +72,27 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
   load, and the prompt appears once they are ready. Set 1 of the character
   colours holds `! " # $ % & '`, so those come out yellow on that screen.
 * The tokenized program is about 12.4 KB, so it needs the 32K expansion (see the build notes).
-* Witness portraits: draw a 32x32 PNG with ink and a transparent background, then run
-  `python3 tools/face.py art/merchant.png`. It prints the `DATA` lines (colours, the unique 8x8
-  blocks, and four row strings) that go after the quiz data at line 1400. `art/merchant.png` is
-  witness 1. Lines 7400-7444 load the face during the narration and draw it on rows 4-7. All
-  blocks of a face share one colour pair, and a face uses sets 9 and 10 (characters 96-111).
+* The cast of witnesses is listed in `art/cast.txt` (a 32x32 PNG and a caption per line). Run
+  `python3 tools/face.py art/cast.txt` to get the `DATA` lines that replace the block at line 1400.
+  Draw each face as black ink on a transparent background. The cast needs 3 to 12 faces.
+  At each stop, `7500` deals three different faces from the shuffled cast to the three witnesses,
+  and the roster shows their captions.
+* Character slots. Characters 96 to 159 are free for graphics (minus 136 to 143, which the game
+  uses), and sprites draw from the same patterns, so they save nothing. Graphics share fixed
+  slots instead of owning characters:
+
+  | Slot | Characters | Colour sets | Use |
+  |---|---|---|---|
+  | face | 96-111 | 9, 10 | the witness portrait, 16 characters |
+  | free | 112-135, 137, 144-159 | 11-13, 15, 16 | pictures, other characters, elements |
+
+  Every face reuses the face slot, so a bigger cast costs no extra characters, only a little data.
+  A face is four row strings; each row is loaded with one `CALL CHAR` and drawn as soon as it is
+  ready, so the face appears row by row after the text. `CURF` remembers which face is loaded, so
+  asking the same witness again reloads nothing. A swap costs about 1.3 s, because `CALL CHAR` takes
+  about 90 ms per character and batching four per call barely helps. To add a new kind of graphic,
+  give it its own slot in the free range, load it with the same row-at-a-time pattern, and track
+  what is loaded so it can be skipped.
 * The chase answer window is `TMAX` (line 178). One poll takes about 0.06 s
   at normal speed in js99er, so 120 is roughly 7 seconds.
 * The travel map moves the plane with `CALL LOCATE` in 30 fixed steps, so it

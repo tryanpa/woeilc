@@ -1,0 +1,6 @@
+# The cast, one face per line: png | caption shown in the game.
+# Captions are at most 22 characters. Run python3 tools/face.py art/cast.txt
+art/merchant.png | A MERCHANT
+art/glasses.png | A PROFESSOR
+art/smile.png | A PASSER-BY
+art/bob.png | A STUDENT
