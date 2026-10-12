@@ -1,1 +1,2 @@
 *.bas text eol=lf
+*.dsk binary
