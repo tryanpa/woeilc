@@ -4,11 +4,11 @@
 Usage: python3 tools/content.py content/game.txt            (print the DATA lines)
        python3 tools/content.py content/game.txt --write woeilc.bas
 
-The block replaces BASIC lines 1000 to 1199 and starts at line 1011:
+The block replaces BASIC lines 1000 to 1199:
   1011 DATA <locations>,<loot items>
-  loot items:  DATA "ITEM","DESCRIPTION"
-  locations:   DATA "NAME",<number of clues>   then one DATA "CLUE" line per clue
-The game reads this once at start-up (lines 7052 to 7056).
+  loot items (from 1012):  DATA "ITEM","DESCRIPTION"
+  locations (from 1100):   DATA "NAME",<number of clues>   then one DATA "CLUE" line per clue
+The game reads this once at start-up, in two chunks (RESTORE 1011 and RESTORE 1100).
 
 Checks: lengths, characters, a spoiler warning when a clue contains a word of its
 own location's name, and the number of screen lines each clue takes, using the same
@@ -19,6 +19,7 @@ import re
 import sys
 
 FIRST, LAST = 1000, 1199
+LOC_LINE = 1100          # the game does RESTORE 1100 to read the locations
 MAX_NAME, MAX_CLUE, MAX_ITEM, MAX_DESC = 24, 108, 40, 56
 MAX_CLUE_LINES = 5
 STOP = {'USA', 'UK', 'UNIV', 'UNIVERSITY', 'PARK', 'LABS', 'OF', 'THE', 'MENLO'}
@@ -111,6 +112,9 @@ def build(loot, locs):
     for item, desc, _ in loot:
         n += 1
         out.append('%d DATA "%s","%s"' % (n, item, desc))
+    if n >= LOC_LINE:
+        sys.exit('the loot block needs lines up to %d, it must end before %d' % (n, LOC_LINE))
+    n = LOC_LINE - 1
     for loc in locs:
         n += 1
         out.append('%d DATA "%s",%d' % (n, loc['name'], len(loc['clues'])))

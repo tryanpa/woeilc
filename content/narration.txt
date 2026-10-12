@@ -1,0 +1,39 @@
+# The title page and the three narration pages at the start of the game.
+# Edit this file, then run: python3 tools/narration.py content/narration.txt --write woeilc.bas
+# (tools/build.py does that for you.) The text is shown in capitals, inside a yellow frame.
+#
+#   [title start=6]   the title page; start= is the screen row of its first line (default 4)
+#   [page]            a narration page (rows 4 to 17 are available: 14 lines of 28 characters)
+#
+# Inside a page:
+#   plain text        a paragraph; it is word wrapped to 28 characters
+#   a blank line      a blank row
+#   ^text             a centred line (wrapped to 28 characters if it is longer)
+#   ---               a short yellow rule, centred
+#
+# Double quote marks are fine here. The game adds PRESS ANY KEY under every page.
+
+[title start=6]
+^WHERE ON EARTH IS
+^LUCIA CUPERTINO?
+---
+^A COMPUTER HISTORY CAPER
+^ADVENTURE.
+
+^BY RYAN ADNEY
+^2026
+
+[page]
+SAN FRANCISCO.
+
+THE BAY SMELLS OF SALT AND SOLDER. DOWN THE PENINSULA, YOU'LL FIND SILICON VALLEY. A PLACE FILLED WITH DREAMS, LIES, AND THE WORLD'S BEST CON-ARTISTS. THE WEALTH DRAWS THE WORST OF THE WORST: LUCIA CUPERTINO.
+
+[page]
+IN YOUR OFFICE: A TRENCH COAT, A BATTERED TYPEWRITER, AND A FILING CABINET FILLED WITH THE SECRETS OF COMPUTING HISTORY. TWO FLIGHTS UP FROM A GREASY NOODLE SHOP YOU SIT. A NEON SIGN BLINKS. THE RENT IS LATE AGAIN.
+
+THE PHONE RINGS.
+
+[page]
+"IT'S GONE!" SAYS A VOICE ON THE PHONE "SHE TOOK IT...LUCIA CUPERTINO! FIND HER AND WE WILL REWARD YOU HANDSOMELY."
+
+YOU GRAB YOUR COAT. THE CLOCK IS ALREADY RUNNING.

@@ -68,11 +68,20 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
 
 ## Notes
 
-* Start-up shows a three-page narration (lines 7100-7194) in the game's black,
-  purple and yellow. Page 1 is on screen while the arrays and character shapes
-  load, and the prompt appears once they are ready. Set 1 of the character
-  colours holds `! " # $ % & '`, so those come out yellow on that screen.
-* The tokenized program is about 18.5 KB, so it needs the 32K expansion (see the build notes).
+* Start-up shows a title page and three narration pages, in the game's black, purple and yellow,
+  inside a yellow frame. The text is in `content/narration.txt`; `tools/narration.py` word wraps
+  and centres it into lines 1500 to 1599 (the build runs it). The game's data load (about 5 s)
+  starts as soon as the title page is drawn, and the PRESS ANY KEY prompt appears when it is done.
+  Set 1 of the character colours holds `! " # $ % & '`, so those come out yellow on those screens.
+* Memory. With the 32K expansion, Extended BASIC `SIZE` reports 11,840 bytes of stack (variables and
+  strings) and 24,488 bytes of program space before the game loads. While the game runs, about 3,500
+  bytes of stack and 4,600 bytes of program space are left. The stack is the tight one: every clue,
+  caption and quiz string lives there, and when it fills, BASIC pauses for a few seconds to garbage
+  collect. Adding locations or clues grows it, so read content lazily or trim it if pauses appear.
+* Data line map: title 1500, narration pages 1510, 1530 and 1550, loot 1011, locations from 1100,
+  herrings 1201, quiz 1301, faces 1400. The loader is split into chunks (7051 to 7059) that run
+  between the narration pages, so the load hides behind the story.
+* The tokenized program is about 19.2 KB, so it needs the 32K expansion (see the build notes).
 * Game content lives in `content/game.txt`: the loot items and the pool of locations with their
   clues. `tools/content.py` checks it (lengths, plain ASCII, a warning when a clue names its own
   place, and how many screen lines each clue takes) and writes it into lines 1000 to 1199 of
@@ -86,14 +95,17 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
   Draw each face as black ink on a transparent background. The cast needs 3 to 12 faces.
   At each stop, `7500` deals three different faces from the shuffled cast to the three witnesses,
   and the roster shows their captions.
-* Character slots. Characters 96 to 159 are free for graphics (minus 136 to 143, which the game
-  uses), and sprites draw from the same patterns, so they save nothing. Graphics share fixed
-  slots instead of owning characters:
+* Character slots. Only characters 96 to 143 can be given colours: `CALL COLOR` rejects colour sets
+  15 and 16 (characters 144 to 159) with BAD VALUE, so those cannot be used for coloured graphics.
+  Characters 136 to 143 are used by the game, and sprites draw from the same patterns as
+  characters, so they save nothing. Graphics share fixed slots instead of owning characters:
 
   | Slot | Characters | Colour sets | Use |
   |---|---|---|---|
   | face | 96-111 | 9, 10 | the witness portrait, 16 characters |
-  | free | 112-135, 137, 144-159 | 11-13, 15, 16 | pictures, other characters, elements |
+  | free | 112-127 | 11, 12 | a 16-character picture slot, such as a location picture |
+  | frame | 128-132 | 13 | the yellow frame of the title and narration; free again once the intro ends |
+  | spare | 133-135, 137 | 13, 14 | four characters |
 
   Every face reuses the face slot, so a bigger cast costs no extra characters, only a little data.
   A face is four row strings; each row is loaded with one `CALL CHAR` and drawn as soon as it is
