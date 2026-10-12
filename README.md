@@ -39,6 +39,27 @@ the emulator. The scenarios worth stepping through after a change are a win,
 a wrong arrest, "too slow" in the chase, running out of turns, play again,
 and quit.
 
+## What things cost (js99er at normal speed)
+
+Measured with small benchmark programs. Real hardware should be close.
+
+| Operation | Time |
+|---|---|
+| one BASIC statement | about 10 ms |
+| one `FOR`/`NEXT` iteration | 6 ms |
+| `CALL HCHAR` | 32 ms plus 1.1 ms per character |
+| `DISPLAY AT` | 30 ms plus about 1.2 ms per character |
+| `CALL CLEAR`, `CALL COLOR` | about 25 ms |
+| `CALL CHAR` | 89 ms |
+| `READ` | 35 to 43 ms |
+| `RESTORE` | 125 ms near the top of the program, 215 ms further down |
+
+`RESTORE` has to scan for its line, so it gets slower the deeper the target
+is. That is why all the `DATA` is read once at start-up into arrays and the
+game never calls `RESTORE` again. Clearing the viewport only covers the rows
+the last screen used, the status line is redrawn only when the turns change,
+and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
+
 ## Notes
 
 * The chase answer window is `TMAX` (line 178). One poll takes about 0.06 s
