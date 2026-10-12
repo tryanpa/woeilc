@@ -62,6 +62,12 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
 
 ## Notes
 
+* Start-up shows a three-page narration (lines 7100-7194) in the game's black,
+  purple and yellow. Page 1 is on screen while the arrays and character shapes
+  load, and the prompt appears once they are ready. Set 1 of the character
+  colours holds `! " # $ % & '`, so those come out yellow on that screen.
+* The tokenized program is about 11.7 KB. If it must run on a console without the
+  32K expansion, check that it still fits.
 * The chase answer window is `TMAX` (line 178). One poll takes about 0.06 s
   at normal speed in js99er, so 120 is roughly 7 seconds.
 * The travel map moves the plane with `CALL LOCATE` in 30 fixed steps, so it
