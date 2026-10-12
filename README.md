@@ -36,7 +36,8 @@ in console video memory and stopped working at about 12 KB: `RUN` returned strai
 with no message. `--short` still builds it, for a program that is small enough.
 
 `check.py` verifies line numbers, that every jump target exists, XB's
-line length limit, and plain ASCII. `xbas99` rejects bad syntax during the
+line length limit, plain ASCII, and that no name is used as both an array and a plain
+variable (XB stops with IMPROPERLY USED NAME). `xbas99` rejects bad syntax during the
 build, so a disk is only produced from a program that tokenizes.
 
 Anything about timing, sprites, screen layout and sound still needs a run in
@@ -71,7 +72,15 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
   purple and yellow. Page 1 is on screen while the arrays and character shapes
   load, and the prompt appears once they are ready. Set 1 of the character
   colours holds `! " # $ % & '`, so those come out yellow on that screen.
-* The tokenized program is about 12.4 KB, so it needs the 32K expansion (see the build notes).
+* The tokenized program is about 18.5 KB, so it needs the 32K expansion (see the build notes).
+* Game content lives in `content/game.txt`: the loot items and the pool of locations with their
+  clues. `tools/content.py` checks it (lengths, plain ASCII, a warning when a clue names its own
+  place, and how many screen lines each clue takes) and writes it into lines 1000 to 1199 of
+  `woeilc.bas`; `tools/build.py` runs it for you. Edit the text file, never those lines. A game
+  uses `RL` (6) locations from a shuffled bag of all `NL`, so successive games cycle through every
+  location before any repeats. The loot is picked at random, never the same twice in a row, and
+  only changes the story text. Each witness gives one of the location's clues at random, not the
+  one given last time. Every game still opens with the first lead.
 * The cast of witnesses is listed in `art/cast.txt` (a 32x32 PNG and a caption per line). Run
   `python3 tools/face.py art/cast.txt` to get the `DATA` lines that replace the block at line 1400.
   Draw each face as black ink on a transparent background. The cast needs 3 to 12 faces.

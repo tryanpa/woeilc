@@ -4,6 +4,8 @@
 Usage: python3 tools/check.py [path/to/woeilc.bas]
 
 Checks:
+  * no name is used both as an array and as a plain variable (XB rejects that
+    at run time with IMPROPERLY USED NAME)
   * line numbers are present, unique and ascending
   * every GOTO, GOSUB, THEN, RESTORE and ON GOSUB target exists
   * lines fit XB's typing limit (5 screen lines of 28 columns)
@@ -15,6 +17,28 @@ import sys
 MAX_LEN = 140  # 5 screen lines of 28 characters
 TARGET = re.compile(r'\b(?:GOSUB|GOTO|THEN|RESTORE)\s+(\d+)')
 ON_GOSUB = re.compile(r'\bON\s+.+?\s+GOSUB\s+([\d,]+)')
+
+
+# Words that look like names but are keywords, functions or subprograms.
+RESERVED = set('''ABS ACCEPT AND AS AT ATN BASE BEEP CALL CHAR CHARPAT CHR$ CLEAR COINC COLOR COS DATA DELSPRITE DIGIT
+DIM DISPLAY DISTANCE ELSE END EXP FOR GOSUB GOTO HCHAR IF INT KEY LEN LOCATE LOG MAGNIFY MOTION NEXT NOT NUMERIC
+ON OPTION OR PATTERN POSITION POS RANDOMIZE READ REM RESTORE RETURN RND SCREEN SEG$ SGN SIN SIZE SOUND SPRITE SQR
+STEP STOP STR$ TAN THEN TO VALIDATE VAL VCHAR ASC UALPHA'''.split())
+
+
+def name_clashes(lines):
+    scalar, array = {}, {}
+    for n, text in lines.items():
+        code = re.sub(r'"[^"]*"', '""', text)
+        if re.match(r'\d+ (REM|DATA)', code):
+            continue
+        body = code.split(' ', 1)[1]
+        for m in re.finditer(r"\b([A-Z][A-Z0-9]*\$?)(\()?", body):
+            name, paren = m.group(1), m.group(2)
+            if name in RESERVED or name.rstrip('$') in RESERVED:
+                continue
+            (array if paren else scalar).setdefault(name, n)
+    return [(nm, array[nm], scalar[nm]) for nm in array if nm in scalar]
 
 
 def check(path):
@@ -51,6 +75,8 @@ def check(path):
             for t in m.group(1).split(','):
                 if t and int(t) not in lines:
                     problems.append('line %d: ON GOSUB target %s is missing' % (n, t))
+    for nm, a, b in name_clashes(lines):
+        problems.append('%s is an array (line %d) and also a plain variable (line %d)' % (nm, a, b))
     return lines, problems
 
 

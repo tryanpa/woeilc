@@ -12,7 +12,8 @@ Usage: python3 tools/build.py [--xdt99 DIR] [--autorun]
   --autorun     also add a DSK1.LOAD program, so Extended BASIC runs the game
                 as soon as it is selected
 
-The script runs tools/check.py first, then tokenizes the program with
+The script runs tools/content.py (content/game.txt into the DATA block) and
+tools/check.py first, then tokenizes the program with
 xbas99 (which also rejects bad syntax) and writes a 90 KB single-sided
 disk image that js99er and Classic99 can both mount as DSK1.
 """
@@ -45,6 +46,9 @@ def main():
     if not os.path.exists(xbas) or not os.path.exists(xdm):
         sys.exit('xdt99 not found in %s (use --xdt99 or set XDT99_DIR)' % args.xdt99)
 
+    # content/game.txt is the source of the clue, location and loot data in woeilc.bas
+    run([sys.executable, os.path.join(ROOT, 'tools', 'content.py'),
+         os.path.join(ROOT, 'content', 'game.txt'), '--write', SRC])
     run([sys.executable, os.path.join(ROOT, 'tools', 'check.py'), SRC])
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
