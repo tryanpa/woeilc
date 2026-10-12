@@ -6,6 +6,9 @@ Usage: python3 tools/build.py [--xdt99 DIR] [--autorun]
   --xdt99 DIR   folder holding xbas99.py and xdm99.py (default: $XDT99_DIR,
                 then ../xdt99)
   --keep-rem    keep comment text on the disk (default: strip it)
+  --short       use the short program format (console memory only). The
+                default is the long format, which needs the 32K expansion
+                but has room for a much bigger program
   --autorun     also add a DSK1.LOAD program, so Extended BASIC runs the game
                 as soon as it is selected
 
@@ -34,6 +37,7 @@ def main():
     ap.add_argument('--xdt99', default=os.environ.get('XDT99_DIR') or os.path.join(ROOT, '..', 'xdt99'))
     ap.add_argument('--autorun', action='store_true')
     ap.add_argument('--keep-rem', action='store_true')
+    ap.add_argument('--short', action='store_true')
     args = ap.parse_args()
 
     xbas = os.path.join(args.xdt99, 'xbas99.py')
@@ -56,7 +60,8 @@ def main():
                 for line in f:
                     num, _, rest = line.rstrip('\n').partition(' ')
                     g.write(num + ' REM\n' if rest.startswith('REM') else line)
-        run([sys.executable, xbas, '-c', src, '-o', prog])
+        fmt = [] if args.short else ['-L']
+        run([sys.executable, xbas, '-c'] + fmt + [src, '-o', prog])
         files = [prog]
         if args.autorun:
             load_src = os.path.join(tmp, 'load.bas')
@@ -65,7 +70,11 @@ def main():
             load = os.path.join(tmp, 'LOAD')
             run([sys.executable, xbas, '-c', load_src, '-o', load])
             files.append(load)
-        run([sys.executable, xdm, OUT, '-X', 'sssd', '-a'] + files + ['-n', 'WOEILC'])
+        # The long format is an INT/VAR 254 file; the short one is a PROGRAM file.
+        fmt_arg = [] if args.short else ['-f', 'INTVAR254']
+        run([sys.executable, xdm, OUT, '-X', 'sssd', '-a', prog] + fmt_arg + ['-n', 'WOEILC'])
+        if args.autorun:
+            run([sys.executable, xdm, OUT, '-a', load])
     run([sys.executable, xdm, OUT, '-i'])
     run([sys.executable, xdm, OUT, '-C'])
     print('wrote', OUT)

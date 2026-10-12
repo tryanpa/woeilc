@@ -30,6 +30,11 @@ The disk copy has comment text stripped (about 12% smaller; a shorter start-up s
 measured); `--keep-rem` leaves it in. `--autorun` also adds a `DSK1.LOAD`
 file so XB starts the game by itself.
 
+The program is stored in the long format by default (an `INT/VAR 254` file), which needs the
+32K memory expansion but has room for a much larger program. The short format keeps the program
+in console video memory and stopped working at about 12 KB: `RUN` returned straight to `READY`
+with no message. `--short` still builds it, for a program that is small enough.
+
 `check.py` verifies line numbers, that every jump target exists, XB's
 line length limit, and plain ASCII. `xbas99` rejects bad syntax during the
 build, so a disk is only produced from a program that tokenizes.
@@ -66,8 +71,12 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
   purple and yellow. Page 1 is on screen while the arrays and character shapes
   load, and the prompt appears once they are ready. Set 1 of the character
   colours holds `! " # $ % & '`, so those come out yellow on that screen.
-* The tokenized program is about 11.7 KB. If it must run on a console without the
-  32K expansion, check that it still fits.
+* The tokenized program is about 12.4 KB, so it needs the 32K expansion (see the build notes).
+* Witness portraits: draw a 32x32 PNG with ink and a transparent background, then run
+  `python3 tools/face.py art/merchant.png`. It prints the `DATA` lines (colours, the unique 8x8
+  blocks, and four row strings) that go after the quiz data at line 1400. `art/merchant.png` is
+  witness 1. Lines 7400-7444 load the face during the narration and draw it on rows 4-7. All
+  blocks of a face share one colour pair, and a face uses sets 9 and 10 (characters 96-111).
 * The chase answer window is `TMAX` (line 178). One poll takes about 0.06 s
   at normal speed in js99er, so 120 is roughly 7 seconds.
 * The travel map moves the plane with `CALL LOCATE` in 30 fixed steps, so it
