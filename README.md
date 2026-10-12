@@ -66,6 +66,17 @@ game never calls `RESTORE` again. Clearing the viewport only covers the rows
 the last screen used, the status line is redrawn only when the turns change,
 and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
 
+## Compiling (XB Game Developer's Package)
+
+The program is written to stay inside what Harry Wilhelm's XB compiler supports: whole numbers only
+(`INT(RND*n)` and no `RND<.5`), `VALIDATE` with a string, no trig, and no delay loops. Delays are
+`CALL SOUND(ms,110,30) :: CALL SOUND(1,110,30)`, which waits the same time in XB and when compiled.
+Line 178 holds the pacing: `TMAX` (chase answer polls), `PD` (a pause per poll) and `SD` (a pause per
+step of the travel plane). In XB they are `105, 0, 0`. The disk also holds `WOEILC-C`, the same
+program with the values for the compiler (`225, 30, 130`, a first guess to tune after a test).
+Compile `WOEILC-C`: in XB, `OLD DSK1.WOEILC-C`, then `SAVE DSK1.WOEILC-M,MERGE`, then run the
+compiler as described in `Using XBGDP.pdf`. Whether the result fits in memory is not known yet.
+
 ## Notes
 
 * Start-up shows a title page and three narration pages, in the game's black, purple and yellow,

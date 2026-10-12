@@ -20,6 +20,7 @@ disk image that js99er and Classic99 can both mount as DSK1.
 """
 import argparse
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'woeilc.bas')
 OUT = os.path.join(ROOT, 'disks', 'WOEILC.dsk')
+COMPILED_PACING = (225, 30, 130)  # TMAX, PD, SD in WOEILC-C
 
 
 def run(cmd):
@@ -70,6 +72,18 @@ def main():
         fmt = [] if args.short else ['-L']
         run([sys.executable, xbas, '-c'] + fmt + [src, '-o', prog])
         files = [prog]
+        # WOEILC-C is the same program with the pacing values for the XB compiler (line 178),
+        # because compiled code runs 30 or more times faster and the loops need real delays.
+        comp_src = os.path.join(tmp, 'woeilc_c.bas')
+        with open(src) as f:
+            text = f.read()
+        text, n = re.subn(r'(?m)^178 .*$', '178 TMAX=%d :: PD=%d :: SD=%d' % COMPILED_PACING, text)
+        if n != 1:
+            sys.exit('line 178 (TMAX, PD, SD) not found')
+        with open(comp_src, 'w') as f:
+            f.write(text)
+        comp = os.path.join(tmp, 'WOEILC-C')
+        run([sys.executable, xbas, '-c'] + fmt + [comp_src, '-o', comp])
         if args.autorun:
             load_src = os.path.join(tmp, 'load.bas')
             with open(load_src, 'w') as f:
@@ -80,6 +94,7 @@ def main():
         # The long format is an INT/VAR 254 file; the short one is a PROGRAM file.
         fmt_arg = [] if args.short else ['-f', 'INTVAR254']
         run([sys.executable, xdm, OUT, '-X', 'sssd', '-a', prog] + fmt_arg + ['-n', 'WOEILC'])
+        run([sys.executable, xdm, OUT, '-a', comp] + fmt_arg + ['-n', 'WOEILC-C'])
         if args.autorun:
             run([sys.executable, xdm, OUT, '-a', load])
     run([sys.executable, xdm, OUT, '-i'])
