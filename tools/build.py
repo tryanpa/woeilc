@@ -28,7 +28,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'woeilc.bas')
 OUT = os.path.join(ROOT, 'disks', 'WOEILC.dsk')
-COMPILED_PACING = (225, 30, 130)  # TMAX, PD, SD in WOEILC-C
+XB_PACING = (105, 0, 0)  # TMAX, PD, SD in the plain XB program WOEILC
 
 
 def run(cmd):
@@ -70,27 +70,24 @@ def main():
                     num, _, rest = line.rstrip('\n').partition(' ')
                     g.write(num + ' REM\n' if rest.startswith('REM') else line)
         fmt = [] if args.short else ['-L']
-        run([sys.executable, xbas, '-c'] + fmt + [src, '-o', prog])
-        files = [prog]
-        # WOEILC-C is the same program with the pacing values for the XB compiler (line 178),
-        # because compiled code runs 30 or more times faster and the loops need real delays.
-        comp_src = os.path.join(tmp, 'woeilc_c.bas')
+        # woeilc.bas carries the pacing for the XB compiler (line 178): compiled code runs 30 or more
+        # times faster, so the loops need real delays. The program for plain XB (WOEILC) gets the
+        # no-delay values, because the interpreter is already slow enough. WOEILC-C is the source as is.
         with open(src) as f:
             text = f.read()
-        text, n = re.subn(r'(?m)^178 .*$', '178 TMAX=%d :: PD=%d :: SD=%d' % COMPILED_PACING, text)
+        xb_text, n = re.subn(r'(?m)^178 .*$', '178 TMAX=%d :: PD=%d :: SD=%d' % XB_PACING, text)
         if n != 1:
             sys.exit('line 178 (TMAX, PD, SD) not found')
-        with open(comp_src, 'w') as f:
-            f.write(text)
+        xb_src = os.path.join(tmp, 'woeilc_xb.bas')
+        with open(xb_src, 'w') as f:
+            f.write(xb_text)
+        run([sys.executable, xbas, '-c'] + fmt + [xb_src, '-o', prog])
+        files = [prog]
         comp = os.path.join(tmp, 'WOEILC-C')
-        run([sys.executable, xbas, '-c'] + fmt + [comp_src, '-o', comp])
-        if args.autorun:
-            load_src = os.path.join(tmp, 'load.bas')
-            with open(load_src, 'w') as f:
-                f.write('100 RUN "DSK1.WOEILC"\n')
-            load = os.path.join(tmp, 'LOAD')
-            run([sys.executable, xbas, '-c', load_src, '-o', load])
-            files.append(load)
+        run([sys.executable, xbas, '-c'] + fmt + [src, '-o', comp])
+        if not args.short:
+            # The same source must also tokenize under strict XB rules, so it can be pasted into XB.
+            run([sys.executable, xbas, '-c', '-s', '-L', src, '-o', os.path.join(tmp, 'strict')])
         # The long format is an INT/VAR 254 file; the short one is a PROGRAM file.
         fmt_arg = [] if args.short else ['-f', 'INTVAR254']
         run([sys.executable, xdm, OUT, '-X', 'sssd', '-a', prog] + fmt_arg + ['-n', 'WOEILC'])

@@ -71,10 +71,12 @@ and `ACCEPT ... VALIDATE(DIGIT)` replaces the old digit-checking loop.
 The program is written to stay inside what Harry Wilhelm's XB compiler supports: whole numbers only
 (`INT(RND*n)` and no `RND<.5`), `VALIDATE` with a string, no trig, and no delay loops. Delays are
 `CALL SOUND(ms,110,30) :: CALL SOUND(1,110,30)`, which waits the same time in XB and when compiled.
-Line 178 holds the pacing: `TMAX` (chase answer polls), `PD` (a pause per poll) and `SD` (a pause per
-step of the travel plane). In XB they are `105, 0, 0`. The disk also holds `WOEILC-C`, the same
-program with the values for the compiler (`225, 30, 130`, a first guess to tune after a test).
-The source is plain Extended BASIC (it tokenizes with `xbas99 -s`), so it can also be typed or pasted into XB. Prefer loading the disk file, though.
+Line 178 holds the pacing: `TMAX` (chase answer polls), `PD` (a pause per poll, in ms) and `SD` (a pause
+per step of the travel plane, in ms). `woeilc.bas` carries the compiler values (`225, 30, 130`), so the
+source can be pasted or loaded into the compiler as is. The build writes two files on the disk:
+`WOEILC` has the XB values (`105, 0, 0`, because the interpreter is already slow) and `WOEILC-C` is the
+source as it stands. Compile `WOEILC-C`, never `WOEILC`: with `SD=0` the flight is over in a blink.
+The pause values are first guesses, so tune them after a test on the real TI.
 Compile `WOEILC-C`: in XB, `OLD DSK1.WOEILC-C`, then `SAVE DSK1.WOEILC-M,MERGE`, then run the
 compiler as described in `Using XBGDP.pdf`. Whether the result fits in memory is not known yet.
 
@@ -84,7 +86,9 @@ compiler as described in `Using XBGDP.pdf`. Whether the result fits in memory is
   inside a yellow frame. The text is in `content/narration.txt`; `tools/narration.py` word wraps
   and centres it into lines 1500 to 1599 (the build runs it). The game's data load (about 5 s)
   starts as soon as the title page is drawn, and the PRESS ANY KEY prompt appears when it is done.
-  Set 1 of the character colours holds `! " # $ % & '`, so those come out yellow on those screens.
+* Menus. Each travel turn offers six places in random order, always including the next stop (and the
+  last stop, so the player can backtrack), and `7` goes back to the main menu. At a witness roster `4`
+  goes back to the main menu. Neither costs a turn.
 * Memory. With the 32K expansion, Extended BASIC `SIZE` reports 11,840 bytes of stack (variables and
   strings) and 24,488 bytes of program space before the game loads. While the game runs, about 3,500
   bytes of stack and 4,600 bytes of program space are left. The stack is the tight one: every clue,
