@@ -74,6 +74,7 @@ The program is written to stay inside what Harry Wilhelm's XB compiler supports:
 Line 178 holds the pacing: `TMAX` (chase answer polls), `PD` (a pause per poll) and `SD` (a pause per
 step of the travel plane). In XB they are `105, 0, 0`. The disk also holds `WOEILC-C`, the same
 program with the values for the compiler (`225, 30, 130`, a first guess to tune after a test).
+The source is plain Extended BASIC (it tokenizes with `xbas99 -s`), so it can also be typed or pasted into XB. Prefer loading the disk file, though.
 Compile `WOEILC-C`: in XB, `OLD DSK1.WOEILC-C`, then `SAVE DSK1.WOEILC-M,MERGE`, then run the
 compiler as described in `Using XBGDP.pdf`. Whether the result fits in memory is not known yet.
 

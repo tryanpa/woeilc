@@ -8,7 +8,8 @@ The block replaces BASIC lines 1500 to 1599. The title page starts at line 1500 
 the pages at 1510, 1530 and 1550, because the game does a RESTORE to each of them.
 Each page is:  DATA <first screen row>,<number of rows>   then one DATA "text" per row.
 Rows are already word wrapped and centred, so the game just prints them (routine 7340).
-Quote marks are written as \\d034 and the yellow rule as \\d136 (xbas99 escapes).
+Quote marks are doubled (""), as Extended BASIC wants them, and the yellow rule is a row holding
+just @, which the game draws with CALL HCHAR. The text has no escapes, so it can be typed into XB.
 """
 import argparse
 import re
@@ -38,7 +39,7 @@ def wrap(text):
 
 
 def esc(s):
-    return s.replace('"', '\\d034')
+    return s.replace('"', '""')
 
 
 def parse(path):
@@ -65,7 +66,7 @@ def parse(path):
         if not text:
             cur['rows'].append('')
         elif text == '---':
-            cur['rows'].append(' ' * ((WIDTH - RULE) // 2) + '\\d136' * RULE)
+            cur['rows'].append('@')
         elif text.startswith('^'):
             for piece in wrap(text[1:].strip()):
                 cur['rows'].append(' ' * ((WIDTH - len(piece)) // 2) + esc(piece))
